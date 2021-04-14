@@ -4,6 +4,7 @@ import MyButton from '../../components/MyButton';
 import {Body, TextInput} from './styles';
 import auth from '@react-native-firebase/auth';
 import {CommonActions} from '@react-navigation/native';
+import firestore from '@react-native-firebase/firestore';
 
 const SignUp = ({navigation}) => {
   const [nome, setNome] = useState('');
@@ -13,34 +14,49 @@ const SignUp = ({navigation}) => {
 
   const cadastrar = () => {
     if (nome !== '' && email !== '' && pass !== '' && confirPass !== '') {
-      auth()
-        .createUserWithEmailAndPassword(email, pass)
-        .then(() => {
-          Alert.alert('Informação', 'Usuário cadastrado com sucesso');
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{name: 'Home'}],
-            }),
-          );
-        })
-        .catch(e => {
-          console.log('SignIn: erro!!' + e);
-          switch (e.code) {
-            case 'auth/email-already-in-use':
-              Alert.alert('Erro', 'email já em uso');
-              break;
-            case 'auth/opperation-not-allowed':
-              Alert.alert('Erro', 'Problemas ao fazer o cadastro');
-              break;
-            case 'auth/invalid-email':
-              Alert.alert('Erro', 'Email inválido');
-              break;
-            case 'auth/weak-password':
-              Alert.alert('Erro', 'Senha fraca. Digite uma senha forte.');
-              break;
-          }
-        });
+      if (pass === confirPass) {
+        auth()
+          .createUserWithEmailAndPassword(email, pass)
+          .then(() => {
+            let userF = auth().currentUser;
+            userF
+              .sendEmailVerification()
+              .then(() => {
+                Alert.alert(
+                  'Informação',
+                  'Foi enviado um e-mail de confirmação para' + email,
+                );
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{name: 'SignIn'}],
+                  }),
+                );
+              })
+              .catch(e => {
+                console.log('SignIn: erro!!' + e);
+              });
+          })
+          .catch(e => {
+            console.log('SignIn: erro!!' + e);
+            switch (e.code) {
+              case 'auth/email-already-in-use':
+                Alert.alert('Erro', 'email já em uso');
+                break;
+              case 'auth/opperation-not-allowed':
+                Alert.alert('Erro', 'Problemas ao fazer o cadastro');
+                break;
+              case 'auth/invalid-email':
+                Alert.alert('Erro', 'Email inválido');
+                break;
+              case 'auth/weak-password':
+                Alert.alert('Erro', 'Senha fraca. Digite uma senha forte.');
+                break;
+            }
+          });
+      } else {
+        Alert.alert('Erro', 'As senha digitadas são diferentes')
+      }
     } else {
       Alert.alert('Erro', 'Por favor, não deixe nenhum campo em branco.');
     }

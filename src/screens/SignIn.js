@@ -28,6 +28,13 @@ const SignIn = ({navigation}) => {
       auth()
         .signInWithEmailAndPassword(email, pass)
         .then(() => {
+          if (!auth().currentUser.emailVerified) {
+            Alert.alert(
+              'Erro',
+              'Você deve verificar o seu e-mail para prosseguir',
+            );
+            return;
+          }
           navigation.dispatch(
             CommonActions.reset({
               index: 0,
