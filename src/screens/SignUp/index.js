@@ -19,19 +19,32 @@ const SignUp = ({navigation}) => {
           .createUserWithEmailAndPassword(email, pass)
           .then(() => {
             let userF = auth().currentUser;
-            userF
-              .sendEmailVerification()
+            let user = {};
+            user.nome = nome;
+            user.email = email;
+            firestore()
+              .collection('users') //ref da coleção
+              .doc(userF.uid) //chave do doc
+              .set(user) //valor do doc
               .then(() => {
-                Alert.alert(
-                  'Informação',
-                  'Foi enviado um e-mail de confirmação para' + email,
-                );
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{name: 'SignIn'}],
-                  }),
-                );
+                console.log('SignUp, cadastrar: User added!');
+                userF
+                  .sendEmailVerification()
+                  .then(() => {
+                    Alert.alert(
+                      'Informação',
+                      'Foi enviado um e-mail de confirmação para' + email,
+                    );
+                    navigation.dispatch(
+                      CommonActions.reset({
+                        index: 0,
+                        routes: [{name: 'SignIn'}],
+                      }),
+                    );
+                  })
+                  .catch(e => {
+                    console.log('SignIn: erro!!' + e);
+                  });
               })
               .catch(e => {
                 console.log('SignIn: erro!!' + e);
@@ -55,7 +68,7 @@ const SignUp = ({navigation}) => {
             }
           });
       } else {
-        Alert.alert('Erro', 'As senha digitadas são diferentes')
+        Alert.alert('Erro', 'As senha digitadas são diferentes');
       }
     } else {
       Alert.alert('Erro', 'Por favor, não deixe nenhum campo em branco.');
